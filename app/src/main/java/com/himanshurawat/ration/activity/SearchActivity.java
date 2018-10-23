@@ -17,6 +17,7 @@ import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
+import com.himanshurawat.ration.PersonActivity;
 import com.himanshurawat.ration.R;
 import com.himanshurawat.ration.adapter.PeopleAdapter;
 import com.himanshurawat.ration.adapter.SearchAdapter;
@@ -171,6 +172,11 @@ public class SearchActivity extends AppCompatActivity implements SearchView.OnQu
 
     @Override
     public void onSearchItemClicked(int position) {
+        Intent intent = new Intent(SearchActivity.this,PersonActivity.class);
+        People person = searchAdapter.getFiltered().get(position);
+        intent.putExtra(Constant.PERSON_KEY,person);
+        startActivity(intent);
+
 
     }
 }

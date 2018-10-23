@@ -36,7 +36,7 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.SearchView
 
     @Override
     public void onBindViewHolder(@NonNull SearchViewHolder searchViewHolder, int i) {
-        int position = searchViewHolder.getAdapterPosition();
+        final int position = searchViewHolder.getAdapterPosition();
         People person = filtered.get(position);
 
         searchViewHolder.nameTextView.setText(person.getName());
@@ -44,6 +44,12 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.SearchView
         searchViewHolder.genderTextView.setText(person.getGender());
         searchViewHolder.phoneTextView.setText(person.getPhone());
         searchViewHolder.addressTextView.setText(person.getAddress());
+        searchViewHolder.itemView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                listener.onSearchItemClicked(position);
+            }
+        });
     }
 
     @Override

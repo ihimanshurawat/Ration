@@ -36,7 +36,7 @@ public class PeopleAdapter extends RecyclerView.Adapter <PeopleAdapter.PeopleVie
     @Override
     public void onBindViewHolder(@NonNull PeopleViewHolder peopleViewHolder, int i) {
 
-        int position = peopleViewHolder.getAdapterPosition();
+        final int position = peopleViewHolder.getAdapterPosition();
         People person = peopleList.get(position);
 
         peopleViewHolder.nameTextView.setText(person.getName());
@@ -44,6 +44,12 @@ public class PeopleAdapter extends RecyclerView.Adapter <PeopleAdapter.PeopleVie
         peopleViewHolder.genderTextView.setText(person.getGender());
         peopleViewHolder.phoneTextView.setText(person.getPhone());
         peopleViewHolder.addressTextView.setText(person.getAddress());
+        peopleViewHolder.itemView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                listener.onPeopleSelected(position);
+            }
+        });
 
     }
 
