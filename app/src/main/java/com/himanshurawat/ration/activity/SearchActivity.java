@@ -1,5 +1,6 @@
 package com.himanshurawat.ration.activity;
 
+import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.Context;
 import android.content.Intent;
@@ -18,6 +19,7 @@ import android.widget.Toast;
 
 import com.himanshurawat.ration.R;
 import com.himanshurawat.ration.adapter.PeopleAdapter;
+import com.himanshurawat.ration.adapter.SearchAdapter;
 import com.himanshurawat.ration.respository.db.entity.People;
 import com.himanshurawat.ration.respository.network.NetworkClient;
 import com.himanshurawat.ration.respository.network.NetworkService;
@@ -33,14 +35,12 @@ import retrofit2.Callback;
 import retrofit2.Response;
 import retrofit2.Retrofit;
 
-public class SearchActivity extends AppCompatActivity implements SearchView.OnQueryTextListener, PeopleAdapter.OnPeopleSelectedListener {
-
-
+public class SearchActivity extends AppCompatActivity implements SearchView.OnQueryTextListener, SearchAdapter.OnSearchItemClickListener {
 
     private List<People> peopleList;
     private NetworkService networkService;
 
-    private PeopleAdapter peopleAdapter;
+    private SearchAdapter searchAdapter;
     private ProgressBar progressBar;
     private RecyclerView peopleRecyclerView;
     private Retrofit retrofit;
@@ -62,8 +62,8 @@ public class SearchActivity extends AppCompatActivity implements SearchView.OnQu
         progressBar = findViewById(R.id.activity_search_progress_bar);
         peopleRecyclerView = findViewById(R.id.activity_search_recycler_view);
         peopleList = new ArrayList<>();
-        peopleAdapter = new PeopleAdapter(this,peopleList,this);
-        peopleRecyclerView.setAdapter(peopleAdapter);
+        searchAdapter = new SearchAdapter(this,peopleList,this);
+        peopleRecyclerView.setAdapter(searchAdapter);
         peopleRecyclerView.setLayoutManager(new LinearLayoutManager(this,LinearLayoutManager.VERTICAL,false));
         progressBar.setIndeterminate(true);
         viewGone(progressBar);
@@ -79,6 +79,15 @@ public class SearchActivity extends AppCompatActivity implements SearchView.OnQu
 
         userViewModel = ViewModelProviders.of(this).get(UserViewModel.class);
 
+        userViewModel.getData().observe(this, new Observer<List<People>>() {
+            @Override
+            public void onChanged(@Nullable List<People> people) {
+                peopleList.clear();
+                if(people != null){
+                    peopleList.addAll(people);
+                }
+            }
+        });
 
 
 
@@ -103,45 +112,43 @@ public class SearchActivity extends AppCompatActivity implements SearchView.OnQu
     public boolean onQueryTextSubmit(String query) {
         if(!query.trim().isEmpty()) {
             viewVisible(progressBar);
-            networkService.getSearchInfo(token,query).enqueue(new Callback<SearchResponse>() {
-                @Override
-                public void onResponse(Call<SearchResponse> call, Response<SearchResponse> response) {
-                    if(response.body() != null){
-                        if(response.body().getStatus().equals(Constant.RESPONSE_SUCCESS)) {
-                            peopleList.clear();
-                            peopleList.addAll(response.body().getPeople());
-                            peopleAdapter.notifyDataSetChanged();
-                            viewGone(progressBar);
-                        }else if(response.body().getStatus().equals(Constant.RESPONSE_FAILURE)){
-                            viewGone(progressBar);
-                            if(response.body().getError().equals("invalid token")){
-                                Toast.makeText(SearchActivity.this,"Invalid Token", Toast.LENGTH_LONG).show();
-                                invalidateSession(SearchActivity.this);
-                            }
-                        }
-                    }
-                }
-
-                @Override
-                public void onFailure(Call<SearchResponse> call, Throwable t) {
-                    Toast.makeText(SearchActivity.this,"Error "+t.getMessage(),Toast.LENGTH_LONG).show();
-                }
-            });
+//            networkService.getSearchInfo(token,query).enqueue(new Callback<SearchResponse>() {
+//                @Override
+//                public void onResponse(Call<SearchResponse> call, Response<SearchResponse> response) {
+//                    if(response.body() != null){
+//                        if(response.body().getStatus().equals(Constant.RESPONSE_SUCCESS)) {
+//                            peopleList.clear();
+//                            peopleList.addAll(response.body().getPeople());
+//                            peopleAdapter.notifyDataSetChanged();
+//                            viewGone(progressBar);
+//                        }else if(response.body().getStatus().equals(Constant.RESPONSE_FAILURE)){
+//                            viewGone(progressBar);
+//                            if(response.body().getError().equals("invalid token")){
+//                                Toast.makeText(SearchActivity.this,"Invalid Token", Toast.LENGTH_LONG).show();
+//                                invalidateSession(SearchActivity.this);
+//                            }
+//                        }
+//                    }
+//                }
+//
+//                @Override
+//                public void onFailure(Call<SearchResponse> call, Throwable t) {
+//                    Toast.makeText(SearchActivity.this,"Error "+t.getMessage(),Toast.LENGTH_LONG).show();
+//                }
+//            });
 
         }
-        return true;
+        return false;
     }
 
     @Override
     public boolean onQueryTextChange(String newText) {
-        return false;
+        searchAdapter.getFiltered().clear();
+        searchAdapter.notifyDataSetChanged();
+        searchAdapter.filterSearch(newText);
+        return true;
     }
 
-
-    @Override
-    public void onPeopleSelected(int position) {
-
-    }
 
 
     private void viewGone(View view){
@@ -160,5 +167,10 @@ public class SearchActivity extends AppCompatActivity implements SearchView.OnQu
         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         startActivity(intent);
         finish();
+    }
+
+    @Override
+    public void onSearchItemClicked(int position) {
+
     }
 }

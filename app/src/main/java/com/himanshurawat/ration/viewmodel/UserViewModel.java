@@ -35,12 +35,13 @@ public class UserViewModel extends AndroidViewModel {
         isSessionValid.setValue(true);
     }
 
-
-
-
-
     public LiveData<List<People>> getData(){
         return database.getPeopleDao().getPeople();
+    }
+
+
+    public LiveData<List<People>> getSearchResult(String query){
+        return database.getPeopleDao().getSearchResult(query);
     }
 
     public void fetchFromInternet(String token,int page){
