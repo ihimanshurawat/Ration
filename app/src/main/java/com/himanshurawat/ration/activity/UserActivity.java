@@ -6,12 +6,15 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.AbsListView;
 import android.widget.Toast;
 
 import com.himanshurawat.ration.R;
@@ -32,12 +35,19 @@ public class UserActivity extends AppCompatActivity implements PeopleAdapter.OnP
     private SharedPreferences userPref;
     private PeopleAdapter peopleAdapter;
     private List<People> peopleList;
+    private LinearLayoutManager linearLayoutManager;
 
     private Retrofit retrofit;
 
     private String token;
 
     private UserViewModel viewModel;
+
+    private boolean isScrolling;
+
+    private int currentItems, totalItems, scrolledOutItems;
+
+    private int page = 1;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -48,7 +58,8 @@ public class UserActivity extends AppCompatActivity implements PeopleAdapter.OnP
         peopleList = new ArrayList<>();
         peopleAdapter = new PeopleAdapter(this,peopleList,this);
         peopleRecyclerView.setAdapter(peopleAdapter);
-        peopleRecyclerView.setLayoutManager(new LinearLayoutManager(this,LinearLayoutManager.VERTICAL,false));
+        linearLayoutManager = new LinearLayoutManager(this,LinearLayoutManager.VERTICAL,false);
+        peopleRecyclerView.setLayoutManager(linearLayoutManager);
 
         retrofit = NetworkClient.getNetworkClient();
 
@@ -75,7 +86,7 @@ public class UserActivity extends AppCompatActivity implements PeopleAdapter.OnP
             @Override
             public void onChanged(@Nullable List<People> people) {
                 if(people != null && people.size()<1){
-                    viewModel.fetchFromInternet(token,1);
+                    viewModel.fetchFromInternet(token,page);
                 }else{
                     peopleList.addAll(people);
                     peopleAdapter.notifyDataSetChanged();
@@ -83,6 +94,29 @@ public class UserActivity extends AppCompatActivity implements PeopleAdapter.OnP
             }
         });
 
+        peopleRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
+                super.onScrollStateChanged(recyclerView, newState);
+
+                if(newState == AbsListView.OnScrollListener.SCROLL_STATE_TOUCH_SCROLL){
+                    isScrolling = true;
+                }
+            }
+
+            @Override
+            public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
+                super.onScrolled(recyclerView, dx, dy);
+
+                currentItems = linearLayoutManager.getChildCount();
+                totalItems = linearLayoutManager.getItemCount();
+                scrolledOutItems = linearLayoutManager.findFirstVisibleItemPosition();
+
+                if(isScrolling && (currentItems + scrolledOutItems ==  totalItems)){
+                    viewModel.fetchFromInternet(token,++page);
+                }
+            }
+        });
 
 //        NetworkService networkService = retrofit.create(NetworkService.class);
 //        networkService.getPeopleFromNetWork(token,1).enqueue(new Callback<PeopleResponse>() {

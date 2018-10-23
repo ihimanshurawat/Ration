@@ -19,7 +19,8 @@ public interface PeopleDao {
     @Query("Select * FROM people")
     LiveData<List<People>> getPeople();
 
-    
+    @Query("SELECT * FROM people WHERE name LIKE :query")
+    LiveData<List<People>> getSearchResult(String query);
 
 
 }

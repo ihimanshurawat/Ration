@@ -104,6 +104,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
 
     private void validateUser(final String username, String password) {
         //Progress Bar Visible
+
         progressBar.setVisibility(View.VISIBLE);
         NetworkService networkService = retrofit.create(NetworkService.class);
         networkService.getLoginInfo(username,password).enqueue(new Callback<SignupReponse>() {
