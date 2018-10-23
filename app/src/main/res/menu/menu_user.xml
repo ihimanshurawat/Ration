@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item android:icon="@drawable/ic_search_24dp"
+        android:id="@+id/meanu_user_search_icon"
+        android:title="@string/search"
+        app:showAsAction="ifRoom"
+        />
+
+    <item android:id="@+id/menu_user_logout_icon"
+        android:title="@string/log_out"
+        app:showAsAction="ifRoom"
+        />
+
+</menu>
